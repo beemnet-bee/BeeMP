@@ -17,17 +17,18 @@ export interface MediaItem {
   song?: string;
 }
 
-export interface SearchResultItem {
-  song: string;
-  artist: string;
-  album?: string;
-  year?: number;
-  previewUrl?: string;
-  albumArtUrl?: string;
-}
-
 export interface Playlist {
   id: string;
   name: string;
   items: MediaItem[];
+}
+
+// Fix: Add SearchResultItem interface for AI-powered music search results.
+export interface SearchResultItem {
+  song: string;
+  artist: string;
+  album: string;
+  year: number;
+  previewUrl?: string;
+  albumArtUrl?: string;
 }

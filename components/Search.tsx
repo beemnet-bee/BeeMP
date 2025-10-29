@@ -10,11 +10,12 @@ interface SearchProps {
 
 // Fix: Use a named interface `AIStudio` for `window.aistudio` to resolve declaration conflicts
 // with other global type definitions, as indicated by the TypeScript error.
+// The interface itself does not need to be global.
+interface AIStudio {
+    hasSelectedApiKey: () => Promise<boolean>;
+    openSelectKey: () => Promise<void>;
+}
 declare global {
-    interface AIStudio {
-        hasSelectedApiKey: () => Promise<boolean>;
-        openSelectKey: () => Promise<void>;
-    }
     interface Window {
         aistudio: AIStudio;
     }

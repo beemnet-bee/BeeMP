@@ -1,5 +1,5 @@
 {
   "name": "Bee Media Player",
-  "description": "A modern media player with light/dark themes, playback history, and search. Upload local audio/video, filter your playlist, or discover new music online via AI-powered search.",
+  "description": "A modern media player with light/dark themes, playback history, and playlist management. Upload and play local audio/video files, and filter your playlist.",
   "requestFramePermissions": []
 }

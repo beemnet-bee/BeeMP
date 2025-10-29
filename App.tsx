@@ -3,15 +3,14 @@ import MediaPlayer from './components/MediaPlayer';
 import VideoPlayer from './components/VideoPlayer';
 import Queue from './components/Queue';
 import History from './components/History';
-import Search from './components/Search';
 import Logo from './components/Logo';
 import LyricsDisplay from './components/LyricsDisplay';
 import PlaylistManager from './components/PlaylistManager';
-import { UploadCloud, ListMusic, History as HistoryIcon, Search as SearchIcon, FolderKanban } from 'lucide-react';
-import { MediaItem, SearchResultItem, Playlist, RepeatMode } from './types';
+import { UploadCloud, ListMusic, History as HistoryIcon, FolderKanban } from 'lucide-react';
+import { MediaItem, Playlist, RepeatMode } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 
-type ActiveTab = 'search' | 'playlists' | 'queue' | 'history';
+type ActiveTab = 'playlists' | 'queue' | 'history';
 
 const App: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
@@ -21,7 +20,7 @@ const App: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [history, setHistory] = useLocalStorage<MediaItem[]>('bee-history', []);
-  const [activeTab, setActiveTab] = useState<ActiveTab>('search');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('queue');
   const [localSearchQuery, setLocalSearchQuery] = useState('');
   const [autoplayNext, setAutoplayNext] = useState(false);
   const [lyrics, setLyrics] = useState<string | null>(null);
@@ -300,49 +299,6 @@ const App: React.FC = () => {
     return activePlaylist.items.filter(item => item.name.toLowerCase().includes(localSearchQuery.toLowerCase()));
   }, [activePlaylist, localSearchQuery]);
 
-  const handlePlayPreview = (item: SearchResultItem) => {
-    if (!item.previewUrl || !activePlaylist) return;
-
-    const newPlaylistItem: MediaItem = {
-      id: crypto.randomUUID(),
-      src: item.previewUrl,
-      type: 'audio',
-      name: `${item.song} by ${item.artist} (Preview)`,
-      artist: item.artist,
-      song: item.song,
-    };
-
-    const existingIndex = activePlaylist.items.findIndex(p => p.src === newPlaylistItem.src);
-    if (existingIndex !== -1) {
-      setCurrentTrackIndex(existingIndex);
-    } else {
-      updateActivePlaylist([...activePlaylist.items, newPlaylistItem]);
-      setCurrentTrackIndex(activePlaylist.items.length);
-    }
-
-    setAutoplayNext(true);
-    setActiveTab('queue');
-  };
-
-  const handleAddToQueueFromSearch = (item: SearchResultItem) => {
-    if (!item.previewUrl || !activePlaylist) return;
-
-    const newPlaylistItem: MediaItem = {
-      id: crypto.randomUUID(),
-      src: item.previewUrl,
-      type: 'audio',
-      name: `${item.song} by ${item.artist} (Preview)`,
-      artist: item.artist,
-      song: item.song,
-    };
-
-    const existingIndex = activePlaylist.items.findIndex(p => p.src === newPlaylistItem.src);
-    if (existingIndex === -1) {
-      updateActivePlaylist([...activePlaylist.items, newPlaylistItem]);
-    }
-    setActiveTab('queue');
-  };
-
   const handlePlayFromHistory = (item: MediaItem) => {
     if (!activePlaylist) return;
     const indexInQueue = activePlaylist.items.findIndex(i => i.id === item.id);
@@ -490,14 +446,11 @@ const App: React.FC = () => {
 
                 <div className="mt-6">
                   <div className="flex items-center justify-between mb-4 bg-slate-200 p-1 rounded-lg gap-1">
-                    <TabButton tab="search" icon={SearchIcon} label="Search" />
                     <TabButton tab="playlists" icon={FolderKanban} label="Playlists" />
                     <TabButton tab="queue" icon={ListMusic} label="Queue" />
                     <TabButton tab="history" icon={HistoryIcon} label="History" />
                   </div>
 
-                  {activeTab === 'search' && <Search onPlayPreview={handlePlayPreview} onAddToQueue={handleAddToQueueFromSearch} />}
-                  
                   {activeTab === 'playlists' && (
                     <PlaylistManager 
                       playlists={playlists}
