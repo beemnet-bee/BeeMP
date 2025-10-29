@@ -414,14 +414,21 @@ const App: React.FC = () => {
       </div>
 
       <div className={`animated-gradient transition-opacity duration-500 ${showSplash ? 'opacity-0' : 'opacity-100'}`}>
-        <div className="min-h-screen bg-sky-100/70 text-slate-800 flex flex-col items-center p-4 lg:p-8 font-sans backdrop-blur-3xl">
+        <div className="min-h-screen bg-sky-100/70 text-slate-800 flex flex-col items-center p-4 lg:p-8 backdrop-blur-3xl">
           <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
             <div className="lg:flex-1 w-full">
-              <header className="text-center mb-6">
-                <div>
+              <header className="flex flex-col sm:flex-row items-center justify-between mb-6">
+                <div className="text-center sm:text-left mb-4 sm:mb-0">
                   <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-yellow-400">Bee Media Player</h1>
-                  <p className="text-slate-600 mt-2">Discover, upload, and enjoy your media.</p>
+                  <p className="text-slate-600 mt-2">Your personal media hub.</p>
                 </div>
+                 <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                  >
+                    <UploadCloud className="w-5 h-5" />
+                    <span>Add More Media</span>
+                  </button>
               </header>
 
               <main 

@@ -32,3 +32,15 @@ export interface SearchResultItem {
   previewUrl?: string;
   albumArtUrl?: string;
 }
+
+// Fix: Defined AIStudio interface and global window declaration here to resolve module conflicts.
+interface AIStudio {
+    hasSelectedApiKey: () => Promise<boolean>;
+    openSelectKey: () => Promise<void>;
+}
+
+declare global {
+    interface Window {
+        aistudio: AIStudio;
+    }
+}

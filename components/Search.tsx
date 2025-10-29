@@ -8,18 +8,7 @@ interface SearchProps {
     onAddToQueue: (item: SearchResultItem) => void;
 }
 
-// Fix: Use a named interface `AIStudio` for `window.aistudio` to resolve declaration conflicts
-// with other global type definitions, as indicated by the TypeScript error.
-// The interface itself does not need to be global.
-interface AIStudio {
-    hasSelectedApiKey: () => Promise<boolean>;
-    openSelectKey: () => Promise<void>;
-}
-declare global {
-    interface Window {
-        aistudio: AIStudio;
-    }
-}
+// Fix: Moved window.aistudio type declarations to types.ts to resolve conflicts.
 
 const Search: React.FC<SearchProps> = ({ onPlayPreview, onAddToQueue }) => {
     const [query, setQuery] = useState('');
