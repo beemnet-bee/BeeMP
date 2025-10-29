@@ -1,11 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GoogleGenAI, Type } from '@google/genai';
 import { SearchResultItem } from '../types';
-import { Search as SearchIcon, Music2, Loader2, ServerCrash, Play, Youtube, Plus } from 'lucide-react';
+import { Search as SearchIcon, Music2, Loader2, ServerCrash, Play, Youtube, Plus, KeyRound } from 'lucide-react';
 
 interface SearchProps {
     onPlayPreview: (item: SearchResultItem) => void;
     onAddToQueue: (item: SearchResultItem) => void;
+}
+
+// Fix: Use a named interface `AIStudio` for `window.aistudio` to resolve declaration conflicts
+// with other global type definitions, as indicated by the TypeScript error.
+declare global {
+    interface AIStudio {
+        hasSelectedApiKey: () => Promise<boolean>;
+        openSelectKey: () => Promise<void>;
+    }
+    interface Window {
+        aistudio: AIStudio;
+    }
 }
 
 const Search: React.FC<SearchProps> = ({ onPlayPreview, onAddToQueue }) => {
@@ -14,6 +26,31 @@ const Search: React.FC<SearchProps> = ({ onPlayPreview, onAddToQueue }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [status, setStatus] = useState<string | null>(null);
+    const [isKeySelected, setIsKeySelected] = useState(false);
+
+    useEffect(() => {
+        const checkApiKey = async () => {
+            if (window.aistudio) {
+                const hasKey = await window.aistudio.hasSelectedApiKey();
+                setIsKeySelected(hasKey);
+            }
+        };
+        checkApiKey();
+    }, []);
+
+    const handleSelectKey = async () => {
+        if (window.aistudio) {
+            try {
+                await window.aistudio.openSelectKey();
+                // To avoid a race condition, assume the key is selected after the dialog is closed.
+                setIsKeySelected(true);
+                setError(null);
+            } catch (e) {
+                console.error("Error opening key selection:", e);
+                setError("Could not open API key selection dialog.");
+            }
+        }
+    };
 
     const fetchPreviews = async (tracks: SearchResultItem[]) => {
         setStatus("Finding playable previews...");
@@ -100,14 +137,39 @@ const Search: React.FC<SearchProps> = ({ onPlayPreview, onAddToQueue }) => {
                 throw new Error("Invalid data structure received from API.");
             }
 
-        } catch (err) {
+        } catch (err: any) {
             console.error("Error searching for music:", err);
-            setError("Sorry, something went wrong while searching. Please try again.");
+            const errorMessage = err.message || '';
+            if (errorMessage.includes("API key") || errorMessage.includes("not found")) {
+                setError("Your API key may be invalid or missing permissions. Please select a valid key.");
+                setIsKeySelected(false);
+            } else {
+                setError("Sorry, something went wrong while searching. Please try again.");
+            }
         } finally {
             setIsLoading(false);
             setStatus(null);
         }
     };
+    
+    if (!isKeySelected) {
+        return (
+            <div className="flex flex-col items-center justify-center text-center p-8 rounded-lg bg-slate-200 text-slate-500">
+                <KeyRound className="w-12 h-12 mb-4 text-amber-500" />
+                <h3 className="font-semibold text-lg text-slate-700">API Key Required</h3>
+                <p className="mt-1 mb-4 max-w-sm">To use the AI-powered music discovery, you need to provide a Google AI API key.</p>
+                <p className="text-xs mb-4">Learn more about billing at <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="text-amber-500 hover:underline">ai.google.dev</a>.</p>
+                <button
+                    onClick={handleSelectKey}
+                    className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+                >
+                    <KeyRound className="w-4 h-4" />
+                    Select API Key
+                </button>
+                {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
+            </div>
+        );
+    }
 
     return (
         <>
@@ -137,7 +199,7 @@ const Search: React.FC<SearchProps> = ({ onPlayPreview, onAddToQueue }) => {
                         {status && <p className="mt-2 text-sm text-slate-600">{status}</p>}
                     </div>
                 )}
-                {error && (
+                {error && !isLoading && (
                     <div className="flex flex-col items-center text-center p-8 text-red-500">
                         <ServerCrash className="w-10 h-10 mb-2" />
                         <p className="font-semibold">{error}</p>
